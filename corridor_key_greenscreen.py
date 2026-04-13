@@ -1,5 +1,5 @@
 import bpy
-from bpy.props import BoolProperty, FloatVectorProperty, PointerProperty, StringProperty
+from bpy.props import BoolProperty, FloatProperty, FloatVectorProperty, PointerProperty, StringProperty
 from pathlib import Path
 
 TREE_NAME = "CorridorKey GreenScreen"
@@ -73,9 +73,36 @@ class FakeCorridorKeyPlaceholderNode(CorridorKeyBaseNode, bpy.types.Node):
     bl_idname = "FakeCorridorKeyPlaceholderNode"
     bl_label = "FakeCorridorKeyPlaceholder"
 
+    fake_threshold: FloatProperty(
+        name="Fake Threshold",
+        description="Placeholder control for future key threshold",
+        default=0.5,
+        min=0.0,
+        max=1.0,
+    )
+    fake_softness: FloatProperty(
+        name="Fake Softness",
+        description="Placeholder control for future edge softness",
+        default=0.25,
+        min=0.0,
+        max=1.0,
+    )
+    fake_despill: FloatProperty(
+        name="Fake Despill",
+        description="Placeholder control for future despill strength",
+        default=0.3,
+        min=0.0,
+        max=1.0,
+    )
+
     def init(self, _context):
         self.inputs.new(SOCKET_IDNAME, "Image")
         self.outputs.new(SOCKET_IDNAME, "Image")
+
+    def draw_buttons(self, _context, layout):
+        layout.prop(self, "fake_threshold")
+        layout.prop(self, "fake_softness")
+        layout.prop(self, "fake_despill")
 
     def _get_input_color(self):
         input_socket = self.inputs.get("Image")
