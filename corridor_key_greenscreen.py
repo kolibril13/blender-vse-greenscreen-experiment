@@ -392,9 +392,10 @@ def _ensure_output_image(name, width, height, float_buffer=False):
 def _blender_pixels_to_numpy_rgba(image):
     """Return RGBA float32 [H,W,4], rows top-first (numpy convention)."""
     width, height = _image_size(image)
-    flat = np.array(image.pixels[:], dtype=np.float32)
-    rgba_bottom_first = flat.reshape((height, width, 4))
-    return np.ascontiguousarray(np.flipud(rgba_bottom_first))
+    flat = np.empty(width * height * 4, dtype=np.float32)
+    image.pixels.foreach_get(flat)
+    rgba = flat.reshape((height, width, 4))
+    return rgba[::-1].copy()
 
 
 def _rough_green_screen_mask(rgb: np.ndarray) -> np.ndarray:
@@ -574,7 +575,7 @@ def evaluate_tree(tree, scene):
         raise RuntimeError(_friendly_inference_error(exc)) from exc
 
     debug_print("assigning output_image.pixels …")
-    output_image.pixels = flat
+    output_image.pixels.foreach_set(flat)
     output_image.update()
     debug_print("evaluate_tree: done")
 

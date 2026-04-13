@@ -182,13 +182,28 @@ def get_engine(
 
     key = f"{backend_resolved!s}:{device_resolved!s}:{int(img_size)}:{cache_key_extra}"
     if key not in _engine_cache:
+        from CorridorKeyModule.optimization_config import OptimizationConfig
+
+        opt = OptimizationConfig(
+            flash_attention=True,
+            tiled_refiner=True,
+            disable_cudnn_benchmark=True,
+            cache_clearing=True,
+            mixed_precision=True,
+            model_precision="float16",
+            high_matmul_precision=True,
+            comp_format="none",
+            comp_checkerboard=False,
+            output_layers="processed",
+        )
         debug_print(
             f"create_engine(backend={backend_resolved!r}, device={device_resolved!r}, "
-            f"img_size={int(img_size)}) — loading weights can take minutes; UI may look frozen…"
+            f"img_size={int(img_size)}) [{opt.summary()}]"
         )
         t0 = time.perf_counter()
         _engine_cache[key] = create_engine(
-            backend=backend_resolved, device=device_resolved, img_size=int(img_size)
+            backend=backend_resolved, device=device_resolved, img_size=int(img_size),
+            optimization_config=opt,
         )
         eng = _engine_cache[key]
         dev = getattr(eng, "device", None)
